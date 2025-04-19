@@ -12,21 +12,19 @@ namespace MorphMapper.Types
         private bool isReversed = false;
         public bool IsReversed => isReversed;
 
-        public Dictionary<PropertyInfo, PropertyInfo> propertyMappings = new();
-        public Dictionary<PropertyInfo, PropertyInfo> reversePropertyMappings = new();
+        public Dictionary<PropertyInfo, Expression> propertyMappings = new();
 
-        public Mapping<TSource, TDestination> ForMember(Expression<Func<TDestination, object>> destination, Expression<Func<TSource, object>> source)
+        public Mapping<TSource, TDestination> ForMember(Expression<Func<TDestination, object>> destination, Func<MappingOption<TSource>, Expression> source)
         {
             var destinationProperty = GetPropertyInfo(destination);
-            var sourceProperty = GetPropertyInfo(source);
 
-            // Validate types
-            if(destinationProperty.PropertyType != sourceProperty.PropertyType)
-            {
-                throw new InvalidOperationException($"Type mismatch between {destinationProperty.Name} and {sourceProperty.Name}");
-            }
+            // todo:Validate types on register
+            //if (destinationProperty.PropertyType != source.GetType())
+            //{
+            //    throw new InvalidOperationException($"Type mismatch while mapping property - {destinationProperty.Name}");
+            //}
 
-            propertyMappings.Add(destinationProperty, sourceProperty);
+            propertyMappings.Add(destinationProperty, source(new MappingOption<TSource>()));
 
             return this;
         }

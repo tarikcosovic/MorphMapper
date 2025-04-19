@@ -1,6 +1,6 @@
 ﻿namespace MorphMapper.Interfaces
 {
-    internal interface IMapping
+    public interface IMapping
     {
         int Hash { get; }
         bool IsReversed { get; }

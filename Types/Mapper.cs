@@ -1,18 +1,17 @@
 ﻿using MorphMapper.Interfaces;
+using MorphMapperLibrary.Types;
+using System.Linq.Expressions;
 
 namespace MorphMapper.Types
 {
-    public class MorphMapper
+    public class Mapper
     {
         private List<IMapping> mappings = [];
+        public List<IMapping> GetMappings() => mappings;
 
-        public Mapping<TSource, TDestination> CreateMap<TSource, TDestination>()
+        public Mapper(MapperConfiguration configuration)
         {
-            Mapping<TSource, TDestination> mapping = new Mapping<TSource, TDestination>();
-
-            mappings.Add(mapping);
-
-            return mapping;
+            this.mappings = configuration.GetMappings();
         }
 
         public TDestination Map<TSource, TDestination>(TSource source) where TDestination : new()
@@ -41,11 +40,34 @@ namespace MorphMapper.Types
             {
                 if(mapping.propertyMappings.ContainsKey(property))
                 {
-                    var sourceProperty = sourceProperties.Find(x => x == mapping.propertyMappings[property]);
+                    mapping.propertyMappings.TryGetValue(property, out var expression);
 
-                    if (sourceProperty is not null)
+                    var compiledExpression = expression as LambdaExpression;
+
+                    // If Mapping option ignore is set
+                    var isIgnored = compiledExpression.Parameters.Any(x => x.Name == "ignore");
+
+                    if (compiledExpression != null)
                     {
-                        property.SetValue(newObject, sourceProperty.GetValue(source));
+                        var compiledDelegate = compiledExpression.Compile();
+
+                        object? value = null;
+
+                        if(isIgnored)
+                        {
+                            // todo: figure out what to do with ignored properties
+                            //value = compiledDelegate.DynamicInvoke(source.GetType().GetProperty(property.Name).GetValue(source));
+                        }
+                        else
+                        {
+                            value = compiledDelegate.DynamicInvoke(source);
+                        }
+
+                        property.SetValue(newObject, value);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("The expression could not be compiled.");
                     }
                 }
                 else

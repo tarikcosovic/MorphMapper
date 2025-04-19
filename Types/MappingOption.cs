@@ -2,16 +2,16 @@
 
 namespace MorphMapper.Types
 {
-    public class MappingOption
+    public class MappingOption<Property>
     {
-        public void MapFrom(Expression<Func<object, object>> expression)
+        public Expression<Func<Property, object>> MapFrom(Expression<Func<Property, object>> expression)
         {
-
+            return expression;
         }
 
-        public void Ignore(Expression<Func<object, object>> expression)
+        public Expression<Func<object, object>> Ignore()
         {
-
+            return (ignore) => ignore;
         }
     }
 }
