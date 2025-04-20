@@ -4,16 +4,27 @@ using System.Linq.Expressions;
 
 namespace MorphMapper.Types
 {
-    public class Mapper
+    public class Mapper(MapperConfiguration configuration)
     {
-        private List<IMapping> mappings = [];
+        private readonly List<IMapping> mappings = configuration.GetMappings();
         public List<IMapping> GetMappings() => mappings;
 
-        public Mapper(MapperConfiguration configuration)
-        {
-            this.mappings = configuration.GetMappings();
-        }
-
+        /// <summary>
+        /// Maps properties from a source object of type <typeparamref name="TSource"/> 
+        /// to a new instance of type <typeparamref name="TDestination"/>.
+        /// The mapping is performed based on the property mappings defined in the 
+        /// <see cref="Mapping{TSource, TDestination}"/> configuration.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the source object.</typeparam>
+        /// <typeparam name="TDestination">The type of the destination object.</typeparam>
+        /// <param name="source">The source object to map from.</param>
+        /// <returns>
+        /// A new instance of <typeparamref name="TDestination"/> with properties 
+        /// mapped from the source object.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if no mapping configuration exists for the specified source and 
+        /// destination types, or
         public TDestination Map<TSource, TDestination>(TSource source) where TDestination : new()
         {
             var currentTypesHash = typeof(TSource).GetHashCode() + typeof(TDestination).GetHashCode();
